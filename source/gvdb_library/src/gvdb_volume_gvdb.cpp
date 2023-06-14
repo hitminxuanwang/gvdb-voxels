@@ -2357,6 +2357,57 @@ void VolumeGVDB::Initialize ()
 
 	mHasObstacle = false;
 
+	//CUDA_ARRAY3D_DESCRIPTOR desc;
+	//desc.Format = CU_AD_FORMAT_FLOAT;			
+	//desc.NumChannels = 1;
+
+	Vector3DI gVolumeRes = Vector3DI(512, 512, 512);
+
+	CUDA_ARRAY3D_DESCRIPTOR channelDesc;
+
+	CUDA_ARRAY3D_DESCRIPTOR desc;
+	desc.Format = CU_AD_FORMAT_FLOAT;
+	desc.NumChannels = 4;
+
+	desc.Width = gVolumeRes.x;
+	desc.Height = gVolumeRes.y;
+	desc.Depth = gVolumeRes.z;
+
+	desc.Flags = CUDA_ARRAY3D_SURFACE_LDST;
+
+	cudaCheck(cuArray3DCreate(&gVolume, &desc), "Allocator", "AllocateTextureGPU", "cuArray3DCreate", "", mbDebug);
+
+
+	CUDA_RESOURCE_DESC resDesc = {};
+	resDesc.resType = CU_RESOURCE_TYPE_ARRAY;
+	resDesc.res.array.hArray = gVolume;
+
+	cudaCheck(cuSurfObjectCreate(&gVolume_Surf, &resDesc), "Allocator", "AllocateTextureGPU", "cuSurfObjectCreate", "", mbDebug);
+
+	CUDA_RESOURCE_DESC surfReadDesc = {};
+	surfReadDesc.resType = CU_RESOURCE_TYPE_ARRAY;
+	surfReadDesc.res.array.hArray = reinterpret_cast<CUarray>(gVolume);
+
+	CUDA_TEXTURE_DESC texReadDesc = {};
+	texReadDesc.addressMode[0] = CU_TR_ADDRESS_MODE_CLAMP;
+	texReadDesc.addressMode[1] = CU_TR_ADDRESS_MODE_CLAMP;
+	texReadDesc.addressMode[2] = CU_TR_ADDRESS_MODE_CLAMP;
+
+	texReadDesc.filterMode = CU_TR_FILTER_MODE_POINT;
+
+	cudaCheck(cuTexObjectCreate(&gVolume_Tex, &surfReadDesc, &texReadDesc, nullptr), "Allocator", "AllocateTextureGPU", "cuGraphicsUnmapResources", "", mbDebug);
+
+
+	// Clear channel to 0
+	Vector3DI block(8, 8, 8);
+	Vector3DI grid(int(gVolumeRes.x / block.x) + 1, int(gVolumeRes.y / block.y) + 1, int(gVolumeRes.z / block.z) + 1);
+
+	int dsize = 4; // float
+	void* args[3] = { &gVolumeRes, &dsize, &gVolume_Surf };
+	cudaCheck(cuLaunchKernel(mPool->GetFillFunction(), grid.x, grid.y, grid.z, block.x, block.y, block.z, 0, mStream, args, NULL), "Allocator", "AllocateTextureGPU", "cuLaunch", "cuFillTex", mbDebug);
+
+
+
 	POP_CTX
 }
 

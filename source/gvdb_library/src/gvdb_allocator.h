@@ -168,6 +168,9 @@
 		CUstream getStream() { return mStream; }
 		void SetDebug(bool b) { mbDebug = b; }
 
+
+		inline CUfunction GetFillFunction() { return cuFillTex; }
+
 	private:
 
 		std::vector< DataPtr >		mPool[ MAX_POOL ];
@@ -180,8 +183,8 @@
 
 		CUstream					mStream;
 
+		CUfunction					cuFillTex;
 		CUmodule					cuAllocatorModule;
-		CUfunction					cuFillTex;	
 		CUfunction					cuCopyTexC;
 		CUfunction					cuCopyTexF;
 		CUfunction					cuCopyBufToTexC;

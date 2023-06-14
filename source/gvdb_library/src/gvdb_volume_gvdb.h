@@ -321,6 +321,11 @@
 			VolumeGVDB ();
 			~VolumeGVDB ();
 			
+			//regular volume
+			CUarray		 gVolume;
+			CUtexObject  gVolume_Tex;			// gpu texture object
+			CUsurfObject gVolume_Surf;			// gpu surface object
+
 			// Setup
 			void SetCudaDevice ( int devid, CUcontext ctx=NULL );
 			void Initialize ();			
