@@ -196,7 +196,7 @@ bool Sample::init()
 	m_show_fluid = false;
 	m_show_topo = false;
 	m_use_color = true;
-	m_render_optix = true;
+	m_render_optix = false;
 	m_shade_style = 1;
 	m_frame = 0;
 	m_sample = 0;
@@ -324,44 +324,44 @@ void Sample::simulate()
 	DataPtr pntvel, clrpos;
 	gvdb.SetPoints(m_pntpos, pntvel, m_use_color ? m_pntclr : clrpos);
 
-	// Rebuild Topology
-	PERF_PUSH("Topology");	
+	//// Rebuild Topology
+	//PERF_PUSH("Topology");	
 
-	if (m_rebuild_gpu) {
-		// GPU rebuild
-		gvdb.RebuildTopology( m_numpnts, m_radius*2.0f, m_origin);
-		gvdb.FinishTopology( false, true );
+	//if (m_rebuild_gpu) {
+	//	// GPU rebuild
+	//	gvdb.RebuildTopology( m_numpnts, m_radius*2.0f, m_origin);
+	//	gvdb.FinishTopology( false, true );
 
-	} else {
-		// CPU rebuild
-		Vector3DF*	fpos = fluid.getPos(0);				// fluid positions
-		uint*		fclr = fluid.getClr(0);					// fluid colors
-		Vector3DF p1;			
-		for (int n=0; n < m_numpnts; n++) {		
-			p1 = (*fpos++) + m_origin;	// get fluid sim pos		
-			if ( n % 2 == 0 ) gvdb.ActivateSpace ( p1 );					// Activate GVDB topology
-		}	
-		gvdb.FinishTopology ();			
-	}
-	PERF_POP ();
+	//} else {
+	//	// CPU rebuild
+	//	Vector3DF*	fpos = fluid.getPos(0);				// fluid positions
+	//	uint*		fclr = fluid.getClr(0);					// fluid colors
+	//	Vector3DF p1;			
+	//	for (int n=0; n < m_numpnts; n++) {		
+	//		p1 = (*fpos++) + m_origin;	// get fluid sim pos		
+	//		if ( n % 2 == 0 ) gvdb.ActivateSpace ( p1 );					// Activate GVDB topology
+	//	}	
+	//	gvdb.FinishTopology ();			
+	//}
+	//PERF_POP ();
 
-	// Update and Clear Atlas	
-	gvdb.UpdateAtlas ();	
+	//// Update and Clear Atlas	
+	//gvdb.UpdateAtlas ();	
 
-	// Insert and Gather Points-to-Voxels
+	//// Insert and Gather Points-to-Voxels
 	int scPntLen = 0, subcell_size = 4;
-	gvdb.InsertPointsSubcell (subcell_size, m_numpnts, m_radius*2.0f, m_origin, scPntLen );
+	//gvdb.InsertPointsSubcell (subcell_size, m_numpnts, m_radius*2.0f, m_origin, scPntLen );
 	gvdb.GatherLevelSet (subcell_size, m_numpnts, m_radius, m_origin, scPntLen, 0, 1 );
-	gvdb.UpdateApron(0, 3.0f);
-	if (m_use_color) gvdb.UpdateApron(1, 0.0f);
+	//gvdb.UpdateApron(0, 3.0f);
+	//if (m_use_color) gvdb.UpdateApron(1, 0.0f);
 
 	// Smooth voxels
 	//gvdb.Compute ( FUNC_SMOOTH,		0, 2, Vector3DF(1, -0.05f, 0), true );	
 
 	// Update OptiX
-	PERF_PUSH("Update OptiX");
-		if (m_render_optix) optx.UpdateVolume(&gvdb);			// GVDB topology has changed
-	PERF_POP();
+	//PERF_PUSH("Update OptiX");
+	//	//if (m_render_optix) optx.UpdateVolume(&gvdb);			// GVDB topology has changed
+	//PERF_POP();
 }
 
 void Sample::draw_fluid ()

@@ -160,8 +160,29 @@ extern "C" __global__ void gvdbRaySurfaceDepth ( VDBInfo* gvdb, uchar chan, ucha
 	outBuf[y*scn.width + x] = make_uchar4(clr.x*255, clr.y*255, clr.z*255, clr.w*255 );
 }
 
+
+
+
+
+
+__device__ void rayCastVolume ( float3 rpos, float3 rdir, float4& clr)
+{
+
+	float3 tStart = rayBoxIntersect(rpos, rdir, make_float3(0,0,0), make_float3(512) );
+
+	if (tStart.z == NOHIT) return;
+
+
+	clr.x = 0.2f;
+
+
+}
+
+
+
+
 // Render the volume data by raycasting
-extern "C" __global__ void gvdbRayLevelSet ( VDBInfo* gvdb, uchar chan, uchar4* outBuf )
+extern "C" __global__ void gvdbRayLevelSet ( VDBInfo* gvdb, uchar chan, uchar4* outBuf, cudaTextureObject_t texVolume,  cudaSurfaceObject_t surfVolume)
 {
 	int x = blockIdx.x * blockDim.x + threadIdx.x;
 	int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -174,9 +195,12 @@ extern "C" __global__ void gvdbRayLevelSet ( VDBInfo* gvdb, uchar chan, uchar4* 
 	float3 rdir = getViewRay(float(x + 0.5f) / float(scn.width), float(y + 0.5f) / float(scn.height));
 
 	// Raycast Level Set
-	rayCast (  gvdb, chan, rpos, rdir, hit, norm, clr, rayLevelSetBrick );
-	clr = performPhongShading ( gvdb, chan, hit, norm, clr, rayLevelSetBrick  );		
+	//rayCast (  gvdb, chan, rpos, rdir, hit, norm, clr, rayLevelSetBrick );
+
+	//clr = performPhongShading ( gvdb, chan, hit, norm, clr, rayLevelSetBrick  );		
 	
+	rayCastVolume(rpos, rdir, clr);
+
 	outBuf [ y*scn.width + x ] = make_uchar4( clr.x*255, clr.y*255, clr.z*255, clr.w*255 );		
 }
 

@@ -4404,12 +4404,12 @@ void VolumeGVDB::Render ( char shading, uchar chan, uchar rbuf )
 	PrepareRender ( width, height, shading );
 
 	// Send VDB Info & Atlas
-	PrepareVDB ();												
+	//PrepareVDB ();												
 
 	// Prepare kernel
 	Vector3DI block ( 16, 16, 1);
 	Vector3DI grid((int(width) + block.x - 1) / block.x, (int(height) + block.y - 1) / block.y, 1);
-	void* args[3] = { &cuVDBInfo, &chan, &mRenderBuf[rbuf].gpu };
+	void* args[5] = { &cuVDBInfo, &chan, &mRenderBuf[rbuf].gpu , &gVolume_Tex , &gVolume_Surf};
 	int kern;	
 	switch ( shading ) {
 	case SHADE_VOXEL:		kern = FUNC_RAYVOXEL;		break;
